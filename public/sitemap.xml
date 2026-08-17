@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <!-- Home -->
+    <url>
+        <loc>https://y4yamira.vercel.app/</loc>
+        <lastmod>2026-08-16</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+    </url>
+
+    <!-- Catálogo -->
+    <url>
+        <loc>https://y4yamira.vercel.app/catalogo</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <!-- Contacto -->
+    <url>
+        <loc>https://y4yamira.vercel.app/contacto</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+
+    <!-- Acerca -->
+    <url>
+        <loc>https://y4yamira.vercel.app/acerca</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+
+</urlset>
