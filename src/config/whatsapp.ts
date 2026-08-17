@@ -11,18 +11,25 @@ export const whatsappConfig = {
     cart: (items: string, totalsBlock: string, delivery?: CartDelivery) => {
       const method =
         delivery && delivery.method === 'domicilio' ? 'A DOMICILIO' : 'RETIRO EN TIENDA';
-      const lines = ['Hola, quiero hacer el siguiente pedido:', `Tipo de envío: ${method}`];
+      const lines = [
+        'Hola, quiero hacer el siguiente pedido:',
+        '',
+        `📦 Tipo de envío: ${method}`,
+      ];
 
       if (delivery && delivery.method === 'domicilio') {
-        if (delivery.name && delivery.name.trim()) lines.push(`Nombre: ${delivery.name.trim()}`);
-        if (delivery.address && delivery.address.trim()) lines.push(`Dirección: ${delivery.address.trim()}`);
-        if (delivery.refs && delivery.refs.trim()) lines.push(`Puntos de ref: ${delivery.refs.trim()}`);
+        if (delivery.name && delivery.name.trim()) lines.push(`👤 Cliente: ${delivery.name.trim()}`);
+        if (delivery.address && delivery.address.trim()) lines.push(`📍 Dirección: ${delivery.address.trim()}`);
+        if (delivery.refs && delivery.refs.trim()) lines.push(`📌 Referencia: ${delivery.refs.trim()}`);
       }
 
       lines.push('');
+      lines.push('🛒 Productos:');
       lines.push(items);
       lines.push('');
-      lines.push(totalsBlock);
+      lines.push(`💰 Total: ${totalsBlock}`);
+      lines.push('');
+      lines.push('Quedo atento a su confirmación. Gracias.');
       return lines.join('\n');
     },
 

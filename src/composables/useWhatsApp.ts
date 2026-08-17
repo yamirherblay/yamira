@@ -11,12 +11,16 @@ export function useWhatsApp() {
 
   function sendCartProposal(items: CartItem[], totals: Record<string, number>, delivery?: CartDelivery) {
     const itemsList = items
-      .map((item) => `${item.product.name} x${item.quantity} - ${formatProductPrice(item.product)}`)
+      .map((item) => `• ${item.product.name} x${item.quantity} - ${formatProductPrice(item.product)} c/u`)
       .join('\n');
 
-    const totalsBlock = Object.entries(totals)
-      .map(([currency, total]) => `Total ${currency}: ${formatPrice(total, currency)}`)
-      .join('\n');
+    const currencyEntries = Object.entries(totals);
+    const totalsBlock =
+      currencyEntries.length === 1
+        ? formatPrice(currencyEntries[0][1], currencyEntries[0][0])
+        : currencyEntries
+            .map(([currency, total]) => `${currency}: ${formatPrice(total, currency)}`)
+            .join('\n');
 
     const message = whatsappConfig.messageTemplates.cart(itemsList, totalsBlock, delivery);
     window.open(formatWhatsAppUrl(message), '_blank');
