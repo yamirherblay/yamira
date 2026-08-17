@@ -15,9 +15,10 @@ export function useWhatsApp() {
       .join('\n');
 
     const currencyEntries = Object.entries(totals);
+    const first = currencyEntries[0] ?? ['CUP', 0];
     const totalsBlock =
       currencyEntries.length === 1
-        ? formatPrice(currencyEntries[0][1], currencyEntries[0][0])
+        ? formatPrice(first[1], first[0])
         : currencyEntries
             .map(([currency, total]) => `${currency}: ${formatPrice(total, currency)}`)
             .join('\n');
