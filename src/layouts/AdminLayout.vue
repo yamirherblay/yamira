@@ -9,6 +9,7 @@
           <span class="text-grey-4 q-ml-sm" style="font-family: 'Nunito Sans', sans-serif; font-size: 0.8rem; font-weight: 400; letter-spacing: 0.5px;">Admin</span>
         </q-toolbar-title>
         <AdminChangeNotifications />
+        <OrdersNotificationBell />
         <q-btn flat dense round>
           <q-icon name="person" />
           <q-menu>
@@ -48,6 +49,22 @@
         <q-item
           clickable
           v-ripple
+          :active="$route.name === 'admin-pedidos'"
+          active-class="text-secondary bg-grey-2"
+          @click="$router.push({ name: 'admin-pedidos' })"
+        >
+          <q-item-section avatar>
+            <q-icon name="receipt_long" class="text-grey-6" />
+          </q-item-section>
+          <q-item-section class="text-weight-medium">Pedidos</q-item-section>
+          <q-item-section side v-if="ordersStore.pendingCount > 0">
+            <q-badge color="red-5" text-color="white">{{ ordersStore.pendingCount }}</q-badge>
+          </q-item-section>
+        </q-item>
+
+        <q-item
+          clickable
+          v-ripple
           :active="$route.name === 'catalogo'"
           active-class="text-secondary bg-grey-2"
           @click="$router.push({ name: 'catalogo' })"
@@ -77,20 +94,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import AdminChangeNotifications from 'layouts/AdminChangeNotifications.vue';
+import OrdersNotificationBell from 'components/OrdersNotificationBell.vue';
 import { useAuthStore } from 'src/stores/auth';
+import { useOrdersStore } from 'src/stores/orders';
 import logo from 'src/assets/logo.png';
 
 const left = ref(false);
 const router = useRouter();
 const auth = useAuthStore();
+const ordersStore = useOrdersStore();
+
+let pollingTimer: number | null = null;
+
+function stopPolling() {
+  if (pollingTimer !== null) {
+    window.clearInterval(pollingTimer);
+    pollingTimer = null;
+  }
+}
+
 async function logout() {
+  stopPolling();
   await auth.logout();
   void router.push({ name: 'home' });
 }
+
+onMounted(() => {
+  void ordersStore.refreshStats();
+  pollingTimer = window.setInterval(() => {
+    void ordersStore.refreshStats();
+  }, 60000);
+});
+
+onBeforeUnmount(() => {
+  stopPolling();
+});
 </script>
 
 <style lang="scss">

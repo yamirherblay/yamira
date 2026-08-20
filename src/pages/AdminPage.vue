@@ -95,11 +95,7 @@
             <q-img :src="props.row.image" :ratio="1" style="width: 36px; height: 36px; border-radius: 2px;" />
           </q-td>
         </template>
-        <template #body-cell-id="props">
-          <q-td :props="props" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #6B7280;">
-            {{ props.row.id?.slice(0, 8) }}...
-          </q-td>
-        </template>
+      
         <template #body-cell-price="props">
           <q-td :props="props" style="font-family: 'JetBrains Mono', monospace;">
             {{ formatPrice(props.row.price, props.row.currency) }}
@@ -294,7 +290,6 @@ const headerCellStyle = () => ({
 
 const columns = <QTableColumn[]>[
   { name: 'image', label: '', field: 'image', align: 'left', style: 'width: 48px' },
-  { name: 'id', label: 'ID', field: 'id', align: 'left', sortable: true },
   { name: 'name', label: 'Nombre', field: 'name', align: 'left', sortable: true },
   {
     name: 'price',

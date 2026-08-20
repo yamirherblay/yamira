@@ -141,7 +141,8 @@
             <q-btn
               color="positive"
               icon="fa-brands fa-whatsapp"
-              :disable="!canSend"
+              :disable="!canSend || sending"
+              :loading="sending"
               @click="buyWhatsApp"
               no-caps
             >
@@ -169,12 +170,14 @@ import { ref, computed, watch } from 'vue';
 import { useCartStore } from 'src/stores/cart';
 import { useQuasar } from 'quasar';
 import { useWhatsApp } from 'src/composables/useWhatsApp';
+import { useOrders } from 'src/composables/useOrders';
 import type { Product, CartDelivery } from 'src/stores/types';
 import { formatPrice } from 'src/utils/format';
 
 const cart = useCartStore();
 const $q = useQuasar();
 const { sendCartProposal } = useWhatsApp();
+const { createOrder, clearPendingOrder } = useOrders();
 
 function effectivePrice(p: Product): number {
   return p.oferta && p.descuento ? p.descuento : p.price;
@@ -261,8 +264,12 @@ function removeItemFromCart(id: string, name: string = '') {
   });
 }
 
-function buyWhatsApp() {
-  if (!cart.items.length) return;
+const sending = ref(false);
+
+async function buyWhatsApp() {
+  if (!cart.items.length || sending.value) return;
+  const items = [...cart.items];
+  const totals = { ...cart.totalByCurrency };
   saveDelivery();
   const delivery: CartDelivery = {
     method: method.value,
@@ -270,7 +277,59 @@ function buyWhatsApp() {
     address: method.value === 'domicilio' ? draftAddress.value.trim() : '',
     refs: draftRefs.value.trim(),
   };
-  sendCartProposal(cart.items, cart.totalByCurrency, delivery);
+
+  sending.value = true;
+  try {
+    const order = await createOrder(items, totals, delivery);
+    if (!order) {
+      $q.notify({
+        type: 'negative',
+        message: 'No se pudo registrar el pedido. Revisa tu conexión e inténtalo de nuevo.',
+        timeout: 3500,
+      });
+      return;
+    }
+
+    const ref = `#${order.id}`;
+    const { opened, url } = sendCartProposal(items, totals, delivery, ref);
+
+    cart.clear();
+    clearPendingOrder();
+
+    if (opened) {
+      $q.notify({
+        type: 'positive',
+        message: `Pedido ${ref} registrado. Abrimos WhatsApp para enviarlo.`,
+        timeout: 4000,
+      });
+    } else {
+      $q.notify({
+        type: 'warning',
+        message: `Pedido ${ref} registrado pero no pude abrir WhatsApp.`,
+        timeout: 8000,
+        actions: [
+          {
+            label: 'Abrir WhatsApp',
+            color: 'white',
+            handler: () => {
+              window.location.href = url;
+            },
+          },
+          { label: 'OK', color: 'white' },
+        ],
+      });
+    }
+    innerVal.value = false;
+  } catch (e) {
+    console.error('Error buyWhatsApp:', e);
+    $q.notify({
+      type: 'negative',
+      message: 'Error al enviar el pedido. Revisa tu conexión e inténtalo de nuevo.',
+      timeout: 3500,
+    });
+  } finally {
+    sending.value = false;
+  }
 }
 
 function emptyCart() {

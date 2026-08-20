@@ -8,12 +8,13 @@ export const whatsappConfig = {
     product: (productName: string, price: string) =>
       `Hola, me interesa: ${productName} - ${price}`,
 
-    cart: (items: string, totalsBlock: string, delivery?: CartDelivery) => {
+    cart: (items: string, totalsBlock: string, delivery?: CartDelivery, reference?: string) => {
       const method =
         delivery && delivery.method === 'domicilio' ? 'A DOMICILIO' : 'RETIRO EN TIENDA';
       const lines = [
         'Hola, quiero hacer el siguiente pedido:',
         '',
+        `🧾 Pedido: ${reference || '---'}`,
         `📦 Tipo de envío: ${method}`,
       ];
 

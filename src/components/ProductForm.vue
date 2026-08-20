@@ -21,9 +21,6 @@
         <q-img :src="previewUrl || localProduct.image" :ratio="16 / 9" style="max-height: 200px" />
       </div>
       <div class="col-12">
-        <q-input v-model="localProduct.id" label="ID" dense outlined :disable="mode === 'edit'" />
-      </div>
-      <div class="col-12">
         <q-input
           v-model="localProduct.name"
           label="Nombre"
@@ -32,7 +29,7 @@
           :rules="[(val) => !!val?.trim() || 'El nombre es obligatorio']"
         />
       </div>
-      <div class="col-4">
+      <div class="col-12 col-sm-6">
         <q-input
           v-model.number="localProduct.price"
           type="number"
@@ -42,7 +39,7 @@
           :rules="[(val) => val > 0 || 'El precio debe ser mayor a 0']"
         />
       </div>
-      <div class="col-4">
+      <div class="col-12 col-sm-6">
         <q-select
           v-model="localProduct.currency"
           :options="currencyOptions"
@@ -53,7 +50,7 @@
           map-options
         />
       </div>
-      <div class="col-4">
+      <div class="col-12 col-sm-6">
         <q-select
           v-model="localProduct.category"
           :options="categoryOptions"
@@ -69,20 +66,7 @@
           :rules="[(val) => !!val || 'La categoría es obligatoria']"
         />
       </div>
-      <div class="col-6">
-        <q-select
-          v-model="localProduct.subcategory"
-          :options="subcategoryOptions"
-          label="Subcategoria"
-          clearable
-          required
-          dense
-          outlined
-          emit-value
-          map-options
-        />
-      </div>
-      <div class="col-6">
+      <div class="col-12 col-sm-6">
         <q-select
           v-model="localProduct.estado"
           :options="estadoOptions"
@@ -94,20 +78,17 @@
           map-options
         />
       </div>
-      <div class="col-12">
-        <q-input v-model="localProduct.image" label="URL de imagen" required dense outlined />
-      </div>
       <div class="col-6">
         <q-toggle v-model="localProduct.new" label="Nuevo" />
       </div>
       <div class="col-6">
         <q-toggle v-model="localProduct.oferta" label="En oferta" />
       </div>
-      <div class="col-6" v-if="localProduct.oferta || localProduct.subcategory === 'Mayorista'">
+      <div class="col-12 col-sm-6" v-if="localProduct.oferta">
         <q-input
           v-model.number="localProduct.descuento"
           type="number"
-          label="Precio de la Oferta o Mayorista"
+          label="Precio de la Oferta"
           dense
           outlined
         />
@@ -188,10 +169,10 @@ const estadoOptions = [
   { label: 'Disponible', value: 'Disponible' },
   { label: 'Agotado', value: 'Agotado' },
 ];
-const subcategoryOptions = ref([
-  { label: 'Mayorista', value: 'Mayorista' },
-  { label: 'Zelle', value: 'Zelle' },
-]);
+// const subcategoryOptions = ref([
+//   { label: 'Mayorista', value: 'Mayorista' },
+//   { label: 'Zelle', value: 'Zelle' },
+// ]);
 
 const categoryOptions = ref<{ label: string; value: string }[]>(
   defaultCategories
@@ -386,7 +367,7 @@ async function onSubmit() {
       price: localProduct.price,
       currency: localProduct.currency || 'CUP',
       category: localProduct.category,
-      subcategory: localProduct.subcategory || null,
+      subcategory: null,
       image: localProduct.image,
       descuento: localProduct.descuento || 0,
       new: localProduct.new || false,

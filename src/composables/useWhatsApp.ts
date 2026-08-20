@@ -9,7 +9,12 @@ export function useWhatsApp() {
     window.open(formatWhatsAppUrl(message), '_blank');
   }
 
-  function sendCartProposal(items: CartItem[], totals: Record<string, number>, delivery?: CartDelivery) {
+  function sendCartProposal(
+    items: CartItem[],
+    totals: Record<string, number>,
+    delivery?: CartDelivery,
+    reference?: string,
+  ): { opened: boolean; url: string } {
     const itemsList = items
       .map((item) => `• ${item.product.name} x${item.quantity} - ${formatProductPrice(item.product)} c/u`)
       .join('\n');
@@ -23,8 +28,10 @@ export function useWhatsApp() {
             .map(([currency, total]) => `${currency}: ${formatPrice(total, currency)}`)
             .join('\n');
 
-    const message = whatsappConfig.messageTemplates.cart(itemsList, totalsBlock, delivery);
-    window.open(formatWhatsAppUrl(message), '_blank');
+    const message = whatsappConfig.messageTemplates.cart(itemsList, totalsBlock, delivery, reference);
+    const url = formatWhatsAppUrl(message);
+    const win = window.open(url, '_blank');
+    return { opened: win != null, url };
   }
 
   function sendContactMessage() {
