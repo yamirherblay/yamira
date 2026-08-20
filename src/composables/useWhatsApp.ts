@@ -5,7 +5,7 @@ import { formatPrice } from 'src/utils/format';
 export function useWhatsApp() {
   function sendProductRequest(product: Product) {
     const price = formatProductPrice(product);
-    const message = whatsappConfig.messageTemplates.product(product.name, price);
+    const message = whatsappConfig.messageTemplates.product(product.name, price, product.image ?? '');
     window.open(formatWhatsAppUrl(message), '_blank');
   }
 

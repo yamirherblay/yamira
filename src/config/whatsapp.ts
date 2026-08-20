@@ -5,8 +5,10 @@ export const whatsappConfig = {
   number: import.meta.env.VITE_WHATSAPP_NUMBER || '5351234567',
   businessName: branding.name,
   messageTemplates: {
-    product: (productName: string, price: string) =>
-      `Hola, me interesa: ${productName} - ${price}`,
+    product: (productName: string, price: string, imageUrl?: string) =>
+      imageUrl
+        ? `Hola, me interesa: ${productName} - ${price}\nImagen del producto: ${imageUrl}`
+        : `Hola, me interesa: ${productName} - ${price}`,
 
     cart: (items: string, totalsBlock: string, delivery?: CartDelivery, reference?: string) => {
       const method =
