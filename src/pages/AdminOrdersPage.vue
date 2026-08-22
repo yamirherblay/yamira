@@ -216,7 +216,7 @@
                 label="Guardar estado"
                 no-caps
                 class="full-width"
-                :disable="!statusDraft || statusDraft === detailOrder.status || savingStatus"
+                :disable="!statusDraft || statusDraft === detailOrder.status || savingStatus || detailOrder.status === 'Entregado' || detailOrder.status === 'Cancelado'"
                 @click="saveStatus"
                 style="font-family: 'Nunito Sans', sans-serif;"
               />
