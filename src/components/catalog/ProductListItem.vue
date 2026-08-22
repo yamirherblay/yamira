@@ -1,5 +1,5 @@
 <template>
-  <q-card class="product-list-item" flat bordered>
+  <q-card class="product-list-item">
     <div class="gold-border-top"></div>
     <div class="row no-wrap items-stretch">
       <div class="list-image-col">
@@ -14,7 +14,7 @@
             <q-badge color="accent" text-color="white" label="Oferta" class="badge-oferta" />
           </div>
           <div v-if="product.new" class="absolute-top-left q-pa-xs badge-new-wrap">
-            <q-badge color="dark" text-color="white" label="Nuevo" class="badge-new" />
+            <q-badge color="blue" text-color="white" label="NUEVO" class="badge-new" />
           </div>
         </q-img>
       </div>
@@ -34,7 +34,7 @@
             </template>
           </div>
           <q-badge
-            :color="product.estado === 'Disponible' ? 'positive' : 'negative'"
+            :color="product.estado === 'Disponible' ? 'info' : 'negative'"
             :text-color="'white'"
             :label="product.estado"
             class="list-status"
@@ -88,11 +88,18 @@ defineEmits<{
   height: 100%;
   border-radius: 5px;
   overflow: hidden;
-  transition: box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .product-list-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.product-list-item:hover .gold-border-top {
+  border-image: linear-gradient(90deg, #c98a3d, #d9a45c) 1;
 }
 
 .list-image-col {
@@ -209,7 +216,7 @@ defineEmits<{
   width: 34px;
   height: 34px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: 50%; 
   display: flex;
   align-items: center;
   justify-content: center;

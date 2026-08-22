@@ -19,7 +19,9 @@
             class="preview-image"
           />
         </div>
-
+ <div class="preview-image-wrap">
+        currentProduct?.descripcion
+        </div>
         <q-btn
           v-if="currentProduct && currentProduct.estado !== 'Agotado'"
           class="preview-add q-mt-lg"

@@ -4,7 +4,7 @@ export const branding = {
   name: 'Y4Y',
   slogan: 'Todo a tu alcance',
   logo,
-  siteUrl: 'https://y4yamira.vercel.app',
+  siteUrl: 'https://yamira-shop.vercel.app',
   hero: {
     title: 'Y4Y',
     subtitle:
