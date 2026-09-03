@@ -290,7 +290,7 @@ async function buyWhatsApp() {
       return;
     }
 
-    const ref = `#${order.id}`;
+    const ref = `#${order.token.slice(0, 6)}`;
     const { opened, url } = sendCartProposal(items, totals, delivery, ref);
 
     cart.clear();
