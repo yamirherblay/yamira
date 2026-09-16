@@ -13,6 +13,7 @@ export interface Product {
   new?: boolean;
   negocio_id?: string;
   created_at?: string;
+  cost_price?: number | null;
 }
 
 export interface ProductFormData {
@@ -93,4 +94,39 @@ export interface OrderProductRow {
   qty: number;
   price_at_order: number | null;
   products?: { name: string; image?: string; currency?: string } | null;
+}
+
+export type StockMoveType = 'entrada' | 'salida' | 'devolucion' | 'ajuste' | 'dano';
+
+export interface Stock {
+  id: string;
+  product_id: string;
+  qty_available: number;
+  qty_damaged: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StockMove {
+  id: string;
+  product_id: string;
+  type: StockMoveType;
+  qty: number;
+  order_id: string | null;
+  user_id: string;
+  note: string | null;
+  created_at: string;
+  user_name?: string | null;
+  products?: { name: string; image?: string } | null;
+}
+
+export interface InventoryProduct extends Product {
+  stock: Stock | null;
+}
+
+export interface StockMoveResult {
+  success: boolean;
+  error?: string;
+  qty_available?: number;
+  qty_damaged?: number;
 }

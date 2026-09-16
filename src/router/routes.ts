@@ -29,6 +29,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', name: 'admin', component: () => import('pages/AdminPage.vue') },
       { path: 'pedidos', name: 'admin-pedidos', component: () => import('pages/AdminOrdersPage.vue') },
+      { path: 'inventario', name: 'admin-inventario', component: () => import('pages/InventarioPage.vue') },
     ],
   },
   // Catch-all route goes to the same blank page for now

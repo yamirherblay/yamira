@@ -65,6 +65,19 @@
         <q-item
           clickable
           v-ripple
+          :active="$route.name === 'admin-inventario'"
+          active-class="text-secondary bg-grey-2"
+          @click="$router.push({ name: 'admin-inventario' })"
+        >
+          <q-item-section avatar>
+            <q-icon name="inventory" class="text-grey-6" />
+          </q-item-section>
+          <q-item-section class="text-weight-medium">Inventario</q-item-section>
+        </q-item>
+
+        <q-item
+          clickable
+          v-ripple
           :active="$route.name === 'catalogo'"
           active-class="text-secondary bg-grey-2"
           @click="$router.push({ name: 'catalogo' })"
