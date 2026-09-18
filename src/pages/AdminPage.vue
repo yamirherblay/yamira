@@ -70,32 +70,63 @@
       <q-table
         :rows="filteredProducts"
         :columns="columns"
+        :visible-columns="visibleColumns"
+        :row-class="() => (isMobile ? 'cursor-pointer' : '')"
         flat
         :header-cell-style="headerCellStyle"
         loading-label="Cargando productos..."
         row-key="id"
         :pagination="{ rowsPerPage: 10 }"
         class="products-table"
+        @row-click="onRowClick"
       >
         <template #body-cell-actions="props">
           <q-td :props="props">
-            <q-btn size="sm" color="primary" flat icon="visibility" @click="openView(props.row)" class="q-mr-xs">
-              <q-tooltip>Ver detalle</q-tooltip>
+            <q-btn
+              v-if="isMobile"
+              size="sm"
+              round
+              flat
+              color="primary"
+              icon="more_vert"
+              aria-label="Acciones"
+              @click.stop
+            >
+              <q-menu auto-close>
+                <q-list dense style="min-width: 210px;">
+                  <q-item clickable v-close-popup @click="openView(props.row)">
+                    <q-item-section avatar><q-icon name="visibility" /></q-item-section>
+                    <q-item-section>Ver detalle</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup @click="openEdit(props.row)">
+                    <q-item-section avatar><q-icon name="edit" /></q-item-section>
+                    <q-item-section>Editar</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup @click="confirmToggle(props.row)">
+                    <q-item-section avatar><q-icon name="toggle_on" /></q-item-section>
+                    <q-item-section>Cambiar disponibilidad</q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable v-close-popup @click="confirmDelete(props.row)">
+                    <q-item-section avatar><q-icon name="delete" color="negative" /></q-item-section>
+                    <q-item-section class="text-negative">Eliminar</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
             </q-btn>
-            <q-btn size="sm" color="secondary" flat icon="edit" @click="openEdit(props.row)">
-              <q-tooltip>Editar</q-tooltip>
-            </q-btn>
-            <q-btn size="sm" color="negative" flat icon="delete" @click="confirmDelete(props.row)">
-              <q-tooltip>Eliminar</q-tooltip>
-            </q-btn>
+            <template v-else>
+              <q-btn size="sm" color="primary" flat icon="visibility" aria-label="Ver detalle" @click="openView(props.row)" class="q-mr-xs">
+                <q-tooltip>Ver detalle</q-tooltip>
+              </q-btn>
+              <q-btn size="sm" color="secondary" flat icon="edit" aria-label="Editar" @click="openEdit(props.row)">
+                <q-tooltip>Editar</q-tooltip>
+              </q-btn>
+              <q-btn size="sm" color="negative" flat icon="delete" aria-label="Eliminar" @click="confirmDelete(props.row)">
+                <q-tooltip>Eliminar</q-tooltip>
+              </q-btn>
+            </template>
           </q-td>
         </template>
-        <template #body-cell-image="props">
-          <q-td :props="props">
-            <q-img :src="props.row.image" :ratio="1" style="width: 36px; height: 36px; border-radius: 2px;" />
-          </q-td>
-        </template>
-      
         <template #body-cell-price="props">
           <q-td :props="props" style="font-family: 'JetBrains Mono', monospace;">
             {{ formatPrice(props.row.price, props.row.currency) }}
@@ -139,10 +170,7 @@
         </q-card-section>
         <q-card-section class="q-pt-md">
           <div class="row q-col-gutter-md">
-            <div class="col-4">
-              <q-img :src="viewProduct?.image" :ratio="1" style="border-radius: 4px;" />
-            </div>
-            <div class="col-8">
+            <div class="col-12">
               <div class="q-mb-xs">
                 <span class="text-caption text-grey-7">ID</span>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #1A1A1A;">{{ viewProduct?.id }}</div>
@@ -289,7 +317,6 @@ const headerCellStyle = () => ({
 });
 
 const columns = <QTableColumn[]>[
-  { name: 'image', label: '', field: 'image', align: 'left', style: 'width: 48px' },
   { name: 'name', label: 'Nombre', field: 'name', align: 'left', sortable: true },
   {
     name: 'price',
@@ -311,6 +338,16 @@ const columns = <QTableColumn[]>[
   { name: 'oferta', label: 'Oferta', field: 'oferta', align: 'left' },
   { name: 'actions', label: '', field: 'actions', align: 'right' },
 ];
+
+const isMobile = computed(() => $q.screen.lt.md);
+const visibleColumns = computed(() =>
+  isMobile.value ? ['name', 'price', 'estado', 'actions'] : columns.map((c) => c.name),
+);
+
+function onRowClick(_evt: Event, row: Product) {
+  if (!isMobile.value) return;
+  openView(row);
+}
 
 const filteredProducts = computed(() => {
   const f = filter.value.trim().toLowerCase();
@@ -471,6 +508,7 @@ onMounted(async () => {
       .from('products')
       .select('*')
       .eq('negocio_id', negocioId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
     if (data) {
       products.value = Array.isArray(data) ? data : [];
@@ -588,6 +626,13 @@ onMounted(async () => {
   td {
     font-family: 'Nunito Sans', sans-serif;
     font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 1023.98px) {
+  .products-table .q-btn {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 </style>

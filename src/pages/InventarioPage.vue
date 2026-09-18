@@ -16,7 +16,7 @@
       <q-tab name="moves" label="Movimientos" no-caps />
     </q-tabs>
 
-    <q-tab-panels v-model="tab" animated swipeable>
+    <q-tab-panels v-model="tab" animated>
       <q-tab-panel name="inventory" class="q-pa-none">
         <div class="row q-col-gutter-md q-mb-md">
           <div class="col-6 col-sm-3">
@@ -143,6 +143,8 @@
           <q-table
             :rows="filteredProducts"
             :columns="columns"
+            :visible-columns="visibleColumns"
+            :row-class="() => (isMobile ? 'cursor-pointer' : '')"
             flat
             :header-cell-style="headerCellStyle"
             loading-label="Cargando inventario..."
@@ -150,14 +152,11 @@
             row-key="id"
             :pagination="{ rowsPerPage: 10 }"
             class="products-table"
+            @row-click="onRowClick"
           >
-            <template #body-cell-image="props">
+            <template #body-cell-name="props">
               <q-td :props="props">
-                <q-img
-                  :src="props.row.image"
-                  :ratio="1"
-                  style="width: 36px; height: 36px; border-radius: 2px;"
-                />
+                <span class="cell-ellipsis" :title="props.row.name">{{ props.row.name }}</span>
               </q-td>
             </template>
 
@@ -218,8 +217,20 @@
                     size="sm"
                     flat
                     round
+                    color="blue-grey-6"
+                    icon="history"
+                    aria-label="Historial"
+                    @click="openHistorial(props.row)"
+                  >
+                    <q-tooltip>Historial</q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    size="sm"
+                    flat
+                    round
                     color="green-7"
                     icon="add_circle"
+                    aria-label="Entrada"
                     @click="openDialog(props.row, 'entrada')"
                   >
                     <q-tooltip>Entrada</q-tooltip>
@@ -230,6 +241,7 @@
                     round
                     color="orange-8"
                     icon="remove_circle"
+                    aria-label="Salida"
                     @click="openDialog(props.row, 'salida')"
                   >
                     <q-tooltip>Salida</q-tooltip>
@@ -240,6 +252,7 @@
                     round
                     color="red-5"
                     icon="warning"
+                    aria-label="Daño"
                     @click="openDialog(props.row, 'dano')"
                   >
                     <q-tooltip>Daño</q-tooltip>
@@ -250,6 +263,7 @@
                     round
                     color="blue-7"
                     icon="replay"
+                    aria-label="Devolución"
                     @click="openDialog(props.row, 'devolucion')"
                   >
                     <q-tooltip>Devolución</q-tooltip>
@@ -282,6 +296,8 @@
           <q-table
             :rows="store.moves"
             :columns="moveColumns"
+            :visible-columns="moveVisibleColumns"
+            :row-class="() => (isMobile ? 'cursor-pointer' : '')"
             flat
             :header-cell-style="headerCellStyle"
             loading-label="Cargando movimientos..."
@@ -289,6 +305,7 @@
             row-key="id"
             :pagination="{ rowsPerPage: 15 }"
             class="products-table"
+            @row-click="onMoveRowClick"
           >
             <template #body-cell-created_at="props">
               <q-td :props="props">
@@ -298,14 +315,9 @@
 
             <template #body-cell-product="props">
               <q-td :props="props">
-                <div class="row items-center no-wrap q-gutter-xs">
-                  <q-img
-                    v-if="props.row.products?.image"
-                    :src="props.row.products.image"
-                    style="width: 24px; height: 24px; border-radius: 2px;"
-                  />
-                  <span>{{ props.row.products?.name ?? props.row.product_id }}</span>
-                </div>
+                <span class="cell-ellipsis" :title="props.row.products?.name ?? props.row.product_id">
+                  {{ props.row.products?.name ?? props.row.product_id }}
+                </span>
               </q-td>
             </template>
 
@@ -339,7 +351,12 @@
 
             <template #body-cell-note="props">
               <q-td :props="props">
-                <span class="text-caption text-grey-7">{{ props.row.note || '—' }}</span>
+                <span
+                  class="cell-ellipsis text-caption text-grey-7"
+                  :title="props.row.note || ''"
+                >
+                  {{ props.row.note || '—' }}
+                </span>
               </q-td>
             </template>
           </q-table>
@@ -373,11 +390,6 @@
           >
             <template #option="scope">
               <q-item v-bind="scope.itemProps" style="display: flex; align-items: center; gap: 10px;">
-                <q-img
-                  v-if="scope.opt.image"
-                  :src="scope.opt.image"
-                  style="width: 30px; height: 30px; border-radius: 2px; flex-shrink: 0;"
-                />
                 <div>
                   <div class="text-body2">{{ scope.opt.name }}</div>
                   <div class="text-caption text-grey-7">
@@ -403,24 +415,117 @@
       </q-card>
     </q-dialog>
 
+    <q-dialog v-model="operationDialogOpen">
+      <q-card style="max-width: 360px; width: 100%;">
+        <q-card-section class="row items-center q-py-sm" style="border-bottom: 2px solid #C98A3D;">
+          <div class="text-subtitle1 text-weight-bold" style="font-family: 'Nunito Sans', sans-serif; color: #62045C;">
+            {{ operationProduct?.name }}
+          </div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pa-sm">
+          <div class="text-caption text-grey-7 q-px-sm q-mb-xs" style="font-family: 'Nunito Sans', sans-serif;">
+            Selecciona la operación
+          </div>
+          <q-list>
+            <q-item clickable v-close-popup @click="openHistorial(operationProduct)">
+              <q-item-section avatar>
+                <q-avatar color="blue-grey-6" text-color="white" icon="history" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Ver historial</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item
+              v-for="op in operationOptions"
+              :key="op.type"
+              clickable
+              v-close-popup
+              @click="chooseOperation(op.type)"
+            >
+              <q-item-section avatar>
+                <q-avatar :color="op.color" text-color="white" :icon="op.icon" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ op.label }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="moveDetailOpen">
+      <q-card style="max-width: 420px; width: 100%;">
+        <q-card-section class="row items-center q-py-sm" style="border-bottom: 2px solid #C98A3D;">
+          <div class="text-subtitle1 text-weight-bold" style="font-family: 'Nunito Sans', sans-serif; color: #62045C;">
+            {{ moveDetail?.products?.name ?? 'Movimiento' }}
+          </div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section v-if="moveDetail">
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <span class="text-caption text-grey-7">Tipo</span>
+              <div>
+                <q-badge :label="moveTypeLabel(moveDetail.type)" :color="moveTypeColor(moveDetail.type)" dense />
+              </div>
+            </div>
+            <div class="col-6">
+              <span class="text-caption text-grey-7">Fecha</span>
+              <div class="text-body2">{{ formatDate(moveDetail.created_at) }}</div>
+            </div>
+            <div class="col-6">
+              <span class="text-caption text-grey-7">Cantidad</span>
+              <div class="text-body2" style="font-family: 'JetBrains Mono', monospace;">{{ moveDetail.qty }}</div>
+            </div>
+            <div class="col-12">
+              <span class="text-caption text-grey-7">Producto</span>
+              <div class="text-body2">{{ moveDetail.products?.name ?? moveDetail.product_id }}</div>
+            </div>
+            <div class="col-12">
+              <span class="text-caption text-grey-7">Usuario</span>
+              <div class="text-body2">{{ userDisplay(moveDetail.user_id) }}</div>
+            </div>
+            <div class="col-12">
+              <span class="text-caption text-grey-7">ID</span>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #1A1A1A;">{{ moveDetail.id }}</div>
+            </div>
+            <div v-if="moveDetail.note" class="col-12">
+              <span class="text-caption text-grey-7">Nota</span>
+              <div class="text-body2 text-grey-8">{{ moveDetail.note }}</div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
     <StockMoveDialog
       v-model="dialogOpen"
       :product="dialogProduct"
       :type="dialogType"
       @submitted="onMoveSubmitted"
     />
+
+    <DialogHistorialStock v-model="historialOpen" :product="historialProduct" />
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import type { QTableColumn } from 'quasar';
 import { useMeta, useQuasar } from 'quasar';
 
+import DialogHistorialStock from 'src/components/inventario/DialogHistorialStock.vue';
 import StockMoveDialog from 'src/components/StockMoveDialog.vue';
+import { supabase } from 'boot/supabase';
 import { useInventoryStore } from 'src/stores/inventory';
 import { useAuthStore } from 'src/stores/auth';
-import type { InventoryProduct, StockMoveType } from 'src/stores/types';
+import type { InventoryProduct, StockMove, StockMoveType } from 'src/stores/types';
 import { formatPrice as _formatPrice } from 'src/utils/format';
 
 useMeta({
@@ -456,7 +561,6 @@ const headerCellStyle = () => ({
 });
 
 const columns: QTableColumn[] = [
-  { name: 'image', label: '', field: 'image', align: 'left', style: 'width: 48px' },
   { name: 'name', label: 'Nombre', field: 'name', align: 'left', sortable: true },
   { name: 'price', label: 'Precio', field: 'price', align: 'right', sortable: true },
   { name: 'cost_price', label: 'Costo', field: 'cost_price', align: 'right', sortable: true },
@@ -474,6 +578,55 @@ const moveColumns: QTableColumn[] = [
   { name: 'user_id', label: 'Usuario', field: 'user_id', align: 'left' },
   { name: 'note', label: 'Nota', field: 'note', align: 'left' },
 ];
+
+const isMobile = computed(() => $q.screen.lt.md);
+const visibleColumns = computed(() =>
+  isMobile.value
+    ? ['name', 'estado', 'qty_available']
+    : columns.map((c) => c.name),
+);
+const moveVisibleColumns = computed(() =>
+  isMobile.value
+    ? ['created_at', 'product', 'type', 'qty']
+    : moveColumns.map((c) => c.name),
+);
+
+const operationDialogOpen = ref(false);
+const operationProduct = ref<InventoryProduct | null>(null);
+const historialOpen = ref(false);
+const historialProduct = ref<InventoryProduct | null>(null);
+const moveDetailOpen = ref(false);
+const moveDetail = ref<StockMove | null>(null);
+const operationOptions: { type: StockMoveType; label: string; icon: string; color: string }[] = [
+  { type: 'entrada', label: 'Entrada', icon: 'add_circle', color: 'green-7' },
+  { type: 'salida', label: 'Salida', icon: 'remove_circle', color: 'orange-8' },
+  { type: 'dano', label: 'Daño', icon: 'warning', color: 'red-5' },
+  { type: 'devolucion', label: 'Devolución', icon: 'replay', color: 'blue-7' },
+  { type: 'ajuste', label: 'Ajuste', icon: 'tune', color: 'primary' },
+];
+
+function onRowClick(_evt: Event, row: InventoryProduct) {
+  if (!isMobile.value) return;
+  operationProduct.value = row;
+  operationDialogOpen.value = true;
+}
+
+function chooseOperation(type: StockMoveType) {
+  if (!operationProduct.value) return;
+  openDialog(operationProduct.value, type);
+}
+
+function openHistorial(product: InventoryProduct | null) {
+  if (!product) return;
+  historialProduct.value = product;
+  historialOpen.value = true;
+}
+
+function onMoveRowClick(_evt: Event, row: StockMove) {
+  if (!isMobile.value) return;
+  moveDetail.value = row;
+  moveDetailOpen.value = true;
+}
 
 const filteredProducts = computed(() => {
   const f = filter.value.trim().toLowerCase();
@@ -598,6 +751,25 @@ function onMoveSubmitted() {
   });
 }
 
+let stockChannel: ReturnType<typeof supabase.channel> | null = null;
+
+function subscribeStockRealtime() {
+  try {
+    stockChannel = supabase
+      .channel('stock-realtime-inventory')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'stock' },
+        () => {
+          void store.fetchInventory();
+        },
+      )
+      .subscribe();
+  } catch (e) {
+    console.warn('Realtime de stock no disponible:', e);
+  }
+}
+
 function refresh() {
   void store.fetchInventory();
   void store.fetchMoves();
@@ -606,6 +778,14 @@ function refresh() {
 onMounted(() => {
   void store.fetchInventory();
   void store.fetchMoves();
+  subscribeStockRealtime();
+});
+
+onBeforeUnmount(() => {
+  if (stockChannel) {
+    void supabase.removeChannel(stockChannel);
+    stockChannel = null;
+  }
 });
 </script>
 
@@ -613,5 +793,19 @@ onMounted(() => {
 .gauge-active {
   box-shadow: 0 0 0 2px #C98A3D inset !important;
   background: #F5EDE2 !important;
+}
+
+.cell-ellipsis {
+  display: block;
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1023.98px) {
+  .cell-ellipsis {
+    max-width: 140px;
+  }
 }
 </style>

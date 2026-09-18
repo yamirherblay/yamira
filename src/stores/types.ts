@@ -72,7 +72,7 @@ export interface User {
   isAdmin?: boolean;
 }
 
-export type OrderStatus = 'Pendiente' | 'Confirmado' | 'Entregado' | 'Cancelado';
+export type OrderStatus = 'Pendiente' | 'Confirmado' | 'Entregado' | 'Cancelado' | 'Rechazado';
 
 export interface Order {
   id: number;
@@ -129,4 +129,64 @@ export interface StockMoveResult {
   error?: string;
   qty_available?: number;
   qty_damaged?: number;
+}
+
+export interface Sale {
+  id: number;
+  negocio_id: string;
+  token?: string | null;
+  order_id?: number | null;
+  total_cup: number | null;
+  total_usd?: number | null;
+  note?: string | null;
+  created_at: string;
+}
+
+export interface SaleProductRow {
+  id: number;
+  sale_id: number;
+  id_product: string;
+  qty: number;
+  price_at_sale: number | null;
+  products?: { name: string; image?: string; currency?: string } | null;
+}
+
+export interface SalePaymentRow {
+  id: number;
+  sale_id: number;
+  method: string;
+  amount: number;
+  currency?: string | null;
+}
+
+export interface SaleProductInput {
+  product_id: string;
+  qty: number;
+  price_at_sale: number;
+  currency: string;
+  name?: string;
+}
+
+export interface SalePaymentInput {
+  method: string;
+  amount: number;
+  currency: string;
+}
+
+export interface SaleResult {
+  success: boolean;
+  sale_id?: number;
+  token?: string | null;
+  total_cup?: number;
+  total_usd?: number;
+  error?: string;
+}
+
+export interface PosCartItem {
+  product_id: string;
+  name: string;
+  currency: string;
+  price_at_sale: number;
+  qty: number;
+  stock_max: number;
 }

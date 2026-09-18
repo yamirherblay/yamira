@@ -10,9 +10,8 @@
       </q-card-section>
 
       <q-card-section class="q-pt-md">
-        <div v-if="product" class="row items-center no-wrap q-mb-md">
-          <q-img :src="product.image" style="width: 40px; height: 40px; border-radius: 2px;" />
-          <div class="q-ml-sm">
+        <div v-if="product" class="q-mb-md">
+          <div>
             <div class="text-weight-medium">{{ product.name }}</div>
             <div class="text-caption text-grey-7">
               Stock actual: {{ product.stock?.qty_available ?? 0 }}

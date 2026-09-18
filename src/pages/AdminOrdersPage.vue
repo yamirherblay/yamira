@@ -199,6 +199,18 @@
 
           <q-separator class="q-mb-md" />
 
+          <div v-if="canDeliver" class="row q-mb-md">
+            <q-btn
+              color="primary"
+              icon="local_shipping"
+              label="Entregar y cobrar"
+              no-caps
+              class="full-width"
+              @click="cobrarOpen = true"
+              style="font-family: 'Nunito Sans', sans-serif;"
+            />
+          </div>
+
           <div class="row items-center q-col-gutter-sm">
             <div class="col-12 col-sm-7">
               <q-select
@@ -225,12 +237,15 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <DialogCobrarOrder v-model="cobrarOpen" :order="detailOrder" @completed="onOrderDelivered" />
   </q-page>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useMeta, useQuasar, copyToClipboard } from 'quasar';
+import DialogCobrarOrder from 'src/components/orders/DialogCobrarOrder.vue';
 import { useOrdersStore } from 'src/stores/orders';
 import type { Order, OrderProductRow, OrderStatus } from 'src/stores/types';
 import { formatPrice as formatPriceUtil } from 'src/utils/format';
@@ -250,8 +265,25 @@ const detailOpen = ref(false);
 const detailOrder = ref<Order | null>(null);
 const statusDraft = ref<OrderStatus | null>(null);
 const savingStatus = ref(false);
+const cobrarOpen = ref(false);
 
-const statusOptions: OrderStatus[] = ['Pendiente', 'Confirmado', 'Entregado', 'Cancelado'];
+const statusOptions: OrderStatus[] = ['Pendiente', 'Confirmado', 'Cancelado', 'Rechazado'];
+
+const canDeliver = computed(() => detailOrder.value?.status === 'Confirmado');
+
+async function onOrderDelivered() {
+  cobrarOpen.value = false;
+  if (detailOrder.value) {
+    await ordersStore.updateOrderStatus(detailOrder.value.id, 'Entregado');
+  }
+  $q.notify({
+    message: 'Pedido entregado y cobrado',
+    color: 'positive',
+    icon: 'check_circle',
+    timeout: 2000,
+  });
+  void ordersStore.fetchOrders().then(() => ordersStore.refreshStats());
+}
 
 const filteredOrders = computed(() => {
   const f = filter.value.trim().toLowerCase();

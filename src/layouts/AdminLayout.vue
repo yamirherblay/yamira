@@ -78,6 +78,32 @@
         <q-item
           clickable
           v-ripple
+          :active="$route.name === 'admin-ventas'"
+          active-class="text-secondary bg-grey-2"
+          @click="$router.push({ name: 'admin-ventas' })"
+        >
+          <q-item-section avatar>
+            <q-icon name="point_of_sale" class="text-grey-6" />
+          </q-item-section>
+          <q-item-section class="text-weight-medium">Ventas</q-item-section>
+        </q-item>
+
+        <q-item
+          clickable
+          v-ripple
+          :active="$route.name === 'admin-pos'"
+          active-class="text-secondary bg-grey-2"
+          @click="$router.push({ name: 'admin-pos' })"
+        >
+          <q-item-section avatar>
+            <q-icon name="storefront" class="text-grey-6" />
+          </q-item-section>
+          <q-item-section class="text-weight-medium">POS</q-item-section>
+        </q-item>
+
+        <q-item
+          clickable
+          v-ripple
           :active="$route.name === 'catalogo'"
           active-class="text-secondary bg-grey-2"
           @click="$router.push({ name: 'catalogo' })"
@@ -103,12 +129,32 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <q-footer v-if="$q.screen.lt.md" class="bg-primary text-white bottom-nav" bordered fixed>
+      <q-tabs
+        v-model="activeTab"
+        active-color="secondary"
+        indicator-color="transparent"
+        class="text-grey-4"
+        narrow-indicator
+        dense
+      >
+        <q-tab name="inventario" icon="inventory" label="Inventario" @click="go('admin-inventario')" />
+        <q-tab name="ventas" icon="receipt_long" label="Ventas" @click="go('admin-ventas')" />
+        <q-tab name="pos" icon="storefront" label="POS" @click="go('admin-pos')" />
+        <q-tab name="pedidos" icon="local_shipping" label="Pedidos" @click="go('admin-pedidos')">
+          <q-badge v-if="ordersStore.pendingCount > 0" color="red-5" text-color="white" floating>
+            {{ ordersStore.pendingCount }}
+          </q-badge>
+        </q-tab>
+      </q-tabs>
+    </q-footer>
   </q-layout>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 
 import AdminChangeNotifications from 'layouts/AdminChangeNotifications.vue';
 import OrdersNotificationBell from 'components/OrdersNotificationBell.vue';
@@ -118,8 +164,23 @@ import logo from 'src/assets/logo.png';
 
 const left = ref(false);
 const router = useRouter();
+const route = useRoute();
 const auth = useAuthStore();
 const ordersStore = useOrdersStore();
+
+function tabFromRoute(name: string | undefined): string {
+  if (name === 'admin-inventario') return 'inventario';
+  if (name === 'admin-ventas') return 'ventas';
+  if (name === 'admin-pos') return 'pos';
+  if (name === 'admin-pedidos') return 'pedidos';
+  return '';
+}
+
+const activeTab = ref(tabFromRoute(route.name as string | undefined));
+
+function go(name: string) {
+  void router.push({ name });
+}
 
 let pollingTimer: number | null = null;
 
@@ -143,6 +204,13 @@ onMounted(() => {
   }, 60000);
 });
 
+watch(
+  () => route.name,
+  (name) => {
+    activeTab.value = tabFromRoute(name as string | undefined);
+  },
+);
+
 onBeforeUnmount(() => {
   stopPolling();
 });
@@ -162,6 +230,35 @@ onBeforeUnmount(() => {
         color: #C98A3D !important;
       }
     }
+  }
+}
+
+.bottom-nav {
+  .q-tab {
+    padding: 4px 0;
+    min-height: 56px;
+    transition: transform 0.12s ease;
+  }
+
+  .q-tab__icon {
+    font-size: 1.6rem;
+    transition: transform 0.12s ease;
+  }
+
+  .q-tab__label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: 'Nunito Sans', sans-serif;
+  }
+
+  @media (hover: hover) {
+    .q-tab:hover {
+      transform: scale(1.08);
+    }
+  }
+
+  .q-tab:active {
+    transform: scale(1.08);
   }
 }
 </style>

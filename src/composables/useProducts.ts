@@ -134,13 +134,12 @@ export function useProducts() {
         }
       }
 
-      const { error: deleteError } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id)
-        .eq('negocio_id', adminNegocioId);
+      const { data, error: deleteError } = await supabase.rpc('borrar_producto', {
+        p_product_id: id,
+      });
 
       if (deleteError) throw deleteError;
+      if (data && data.ok === false) throw new Error(data.error || 'Error al borrar producto');
       return true;
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error eliminando producto';

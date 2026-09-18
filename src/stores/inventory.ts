@@ -97,7 +97,7 @@ export const useInventoryStore = defineStore('inventory', {
       try {
         const { data, error } = await supabase
           .from('stock_moves')
-          .select('*, products(name, image)')
+          .select('*, products(name)')
           .order('created_at', { ascending: false })
           .limit(limit);
 
