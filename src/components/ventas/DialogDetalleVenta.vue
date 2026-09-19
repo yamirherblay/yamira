@@ -26,11 +26,6 @@
         <div class="text-caption text-grey-7 q-mb-xs">Productos</div>
         <q-list bordered separator class="rounded-borders q-mb-md">
           <q-item v-for="item in items" :key="item.id">
-            <q-item-section avatar v-if="item.products?.image">
-              <q-avatar>
-                <q-img :src="item.products.image" :ratio="1" style="width: 40px; height: 40px; border-radius: 4px;" />
-              </q-avatar>
-            </q-item-section>
             <q-item-section>
               <q-item-label class="text-weight-medium">{{ item.products?.name || item.id_product }}</q-item-label>
               <q-item-label caption class="text-grey-7">
@@ -99,7 +94,7 @@ const $q = useQuasar();
 const items = ref<SaleProductRow[]>([]);
 const payments = ref<SalePaymentRow[]>([]);
 
-const saleTypeLabel = computed(() => (props.sale?.order_id ? 'Pedido' : 'POS'));
+const saleTypeLabel = computed(() => (props.sale?.order_id ? 'Pedido' : 'Venta'));
 const saleTypeColor = computed(() => (props.sale?.order_id ? 'green-7' : 'blue-7'));
 
 function formatDate(iso: string): string {
@@ -133,7 +128,7 @@ async function load() {
     const [it, py] = await Promise.all([
       supabase
         .from('sale_products')
-        .select('*, products(name, image, currency)')
+        .select('*, products(name, currency)')
         .eq('sale_id', props.sale.id),
       supabase.from('sale_payments').select('*').eq('sale_id', props.sale.id),
     ]);

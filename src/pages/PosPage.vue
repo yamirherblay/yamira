@@ -7,17 +7,52 @@
     <div class="row q-col-gutter-md">
       <div class="col-12 col-md-7">
         <q-card class="products-card q-mb-md">
-          <q-card-section class="row items-center q-col-gutter-sm q-py-sm">
-            <div class="col-12 col-sm-6">
-              <q-input dense outlined v-model="filter" placeholder="Buscar producto por nombre o categoría..." clearable>
-                <template #prepend>
-                  <q-icon name="search" />
-                </template>
-              </q-input>
-            </div>
-            <div class="col-12 col-sm-6">
-              <q-select dense outlined v-model="categoryFilter" :options="categories" label="Categoría" clearable />
-            </div>
+          <q-card-section class="q-py-sm">
+            <q-input dense outlined v-model="filter" placeholder="Buscar producto por nombre o categoría..." clearable>
+              <template #prepend>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+
+            <q-scroll-area
+              class="pos-cats q-mt-sm"
+              :horizontal="true"
+              :thumb-style="thumbStyle"
+              :bar-style="barStyle"
+            >
+              <div ref="catsRowRef" class="row no-wrap q-gutter-sm items-center">
+                <div
+                  class="pos-cat-item"
+                  :class="{ 'pos-cat-item--active': categoryFilter === null }"
+                >
+                  <q-chip
+                    clickable
+                    :color="categoryFilter === null ? 'secondary' : 'grey-3'"
+                    :text-color="categoryFilter === null ? 'white' : 'dark'"
+                    class="q-px-md text-weight-medium"
+                    @click="onCatSelect(null)"
+                  >
+                    <span>Todas</span>
+                  </q-chip>
+                </div>
+                <div
+                  v-for="c in categories"
+                  :key="c"
+                  class="pos-cat-item"
+                  :class="{ 'pos-cat-item--active': categoryFilter === c }"
+                >
+                  <q-chip
+                    clickable
+                    :color="categoryFilter === c ? 'secondary' : 'grey-3'"
+                    :text-color="categoryFilter === c ? 'white' : 'dark'"
+                    class="q-px-md text-weight-medium"
+                    @click="onCatSelect(c)"
+                  >
+                    <span>{{ capitalize(c) }}</span>
+                  </q-chip>
+                </div>
+              </div>
+            </q-scroll-area>
           </q-card-section>
         </q-card>
 
@@ -113,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useMeta, useQuasar } from 'quasar';
 
 import PosCartPanel from 'src/components/pos/PosCartPanel.vue';
@@ -157,6 +192,38 @@ const categories = computed(() =>
   Array.from(new Set(products.value.map((p) => p.category).filter(Boolean)))
     .sort() as string[],
 );
+
+const catsRowRef = ref<HTMLElement | null>(null);
+
+const thumbStyle = {
+  right: '2px',
+  borderRadius: '4px',
+  backgroundColor: 'rgba(0,0,0,0.25)',
+  width: '4px',
+  height: '4px',
+};
+
+const barStyle = {
+  right: '2px',
+  borderRadius: '4px',
+  backgroundColor: 'rgba(0,0,0,0.08)',
+  width: '4px',
+  height: '4px',
+};
+
+function capitalize(s: string): string {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function onCatSelect(cat: string | null) {
+  if (cat === categoryFilter.value) return;
+  categoryFilter.value = cat;
+  void nextTick(() => {
+    const active = catsRowRef.value?.querySelector('.pos-cat-item--active');
+    active?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  });
+}
 
 const filteredProducts = computed(() => {
   const f = filter.value.trim().toLowerCase();
@@ -372,6 +439,33 @@ onMounted(() => {
   background: #FFFFFF;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
   overflow: hidden;
+}
+
+.pos-cats {
+  height: 48px;
+
+  .pos-cat-item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 48px;
+    flex-shrink: 0;
+
+    .q-chip {
+      min-height: 40px;
+    }
+
+    &--active::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 10px;
+      right: 10px;
+      height: 3px;
+      border-radius: 3px;
+      background: #C98A3D;
+    }
+  }
 }
 
 .pos-card {

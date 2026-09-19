@@ -9,7 +9,6 @@
           <span class="text-grey-4 q-ml-sm" style="font-family: 'Nunito Sans', sans-serif; font-size: 0.8rem; font-weight: 400; letter-spacing: 0.5px;">Admin</span>
         </q-toolbar-title>
         <AdminChangeNotifications />
-        <OrdersNotificationBell />
         <q-btn flat dense round>
           <q-icon name="person" />
           <q-menu>
@@ -91,19 +90,6 @@
         <q-item
           clickable
           v-ripple
-          :active="$route.name === 'admin-pos'"
-          active-class="text-secondary bg-grey-2"
-          @click="$router.push({ name: 'admin-pos' })"
-        >
-          <q-item-section avatar>
-            <q-icon name="storefront" class="text-grey-6" />
-          </q-item-section>
-          <q-item-section class="text-weight-medium">POS</q-item-section>
-        </q-item>
-
-        <q-item
-          clickable
-          v-ripple
           :active="$route.name === 'catalogo'"
           active-class="text-secondary bg-grey-2"
           @click="$router.push({ name: 'catalogo' })"
@@ -139,9 +125,9 @@
         narrow-indicator
         dense
       >
+        <q-tab name="productos" icon="dashboard" label="Productos" @click="go('admin')" />
         <q-tab name="inventario" icon="inventory" label="Inventario" @click="go('admin-inventario')" />
         <q-tab name="ventas" icon="receipt_long" label="Ventas" @click="go('admin-ventas')" />
-        <q-tab name="pos" icon="storefront" label="POS" @click="go('admin-pos')" />
         <q-tab name="pedidos" icon="local_shipping" label="Pedidos" @click="go('admin-pedidos')">
           <q-badge v-if="ordersStore.pendingCount > 0" color="red-5" text-color="white" floating>
             {{ ordersStore.pendingCount }}
@@ -157,7 +143,6 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 import AdminChangeNotifications from 'layouts/AdminChangeNotifications.vue';
-import OrdersNotificationBell from 'components/OrdersNotificationBell.vue';
 import { useAuthStore } from 'src/stores/auth';
 import { useOrdersStore } from 'src/stores/orders';
 import logo from 'src/assets/logo.png';
@@ -169,9 +154,9 @@ const auth = useAuthStore();
 const ordersStore = useOrdersStore();
 
 function tabFromRoute(name: string | undefined): string {
+  if (name === 'admin') return 'productos';
   if (name === 'admin-inventario') return 'inventario';
-  if (name === 'admin-ventas') return 'ventas';
-  if (name === 'admin-pos') return 'pos';
+  if (name === 'admin-ventas' || name === 'admin-pos') return 'ventas';
   if (name === 'admin-pedidos') return 'pedidos';
   return '';
 }

@@ -17,6 +17,16 @@
             style="font-family: 'Nunito Sans', sans-serif;"
           />
         </div>
+        <div class="col-auto">
+          <q-btn
+            color="secondary"
+            icon="point_of_sale"
+            label="Nueva Venta"
+            no-caps
+            @click="router.push({ name: 'admin-pos' })"
+            style="font-family: 'Nunito Sans', sans-serif;"
+          />
+        </div>
         <div class="col-12 col-sm-4 q-ml-auto">
           <q-input dense outlined v-model="filter" placeholder="Buscar por ID o token..." clearable>
             <template #prepend>
@@ -162,6 +172,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import type { QTableColumn } from 'quasar';
 import { useMeta, useQuasar } from 'quasar';
 
@@ -180,6 +191,7 @@ useMeta({
 });
 
 const $q = useQuasar();
+const router = useRouter();
 const { anularVenta } = useSales();
 
 const sales = ref<Sale[]>([]);
@@ -236,7 +248,7 @@ const filteredSales = computed(() => {
 });
 
 function saleTypeLabel(sale: Sale): string {
-  return sale.order_id ? 'Pedido' : 'POS';
+  return sale.order_id ? 'Pedido' : 'Venta';
 }
 
 function saleTypeColor(sale: Sale): string {
